@@ -88,11 +88,13 @@ Detailed in ADR 0002. Your implementation responsibilities:
 You are responsible for delivering, in order:
 
 1. **M1 — Event schema + writer.** [LANDED, commit 0c04dc8] Single-tenant chain, no Merkle, no replay UI. Hash and persist; verify chain on read. **Historical M1 gap (now closed in M2):** hashes used a global dev salt (not per-tenant), so equivalent payloads across tenants would have produced identical hashes. M1 alone was for prototyping the chain mechanics only.
-2. **M2 — Per-tenant salt.** [LANDED] Closes the M1 cross-tenant correlation gap. Every tenant now has its own 32-byte CSPRNG salt held in a `KeyVault`; payload + sourceRecordId hashes are HMAC-SHA-256 keyed by that salt. The current implementation is in-memory (`src/audit/salt/in-memory-key-vault.ts`) — fine for dev/test, NOT for production (a process restart loses every salt and orphans every event). The KMS-backed adapter and signature key management are deferred to M3+.
-3. **M3 — KMS-backed KeyVault adapter, replay protocol, first connector.**
-4. **M4 — Nightly Merkle anchoring.**
-5. **M5 — External timestamping.**
-6. **M6 — Auditor view (read-only delegated access).**
+2. **M2 — Per-tenant salt.** [LANDED] Closes the M1 cross-tenant correlation gap. Every tenant now has its own 32-byte CSPRNG salt held in a `KeyVault`; payload + sourceRecordId hashes are HMAC-SHA-256 keyed by that salt. The current implementation is in-memory (`src/audit/salt/in-memory-key-vault.ts`) — fine for dev/test, NOT for production (a process restart loses every salt and orphans every event). The KMS-backed adapter and signature key management are deferred to M3.6.
+3. **M3 — Replay protocol, mock connector.** [LANDED, narrowed scope] `src/audit/replay/` ships `replayEvent` (pure canonicalize-and-match primitive), the `ReplayConnector` interface, an in-memory connector for dev/test, and the `replayWithConnector` orchestrator. Per-tenant salt equality gates attribution: a connector wired to the wrong tenant yields zero matches. Replay returns `matches` + `missing` (drift indicator) and never returns payload contents. Postgres + KMS were intentionally deferred — see M3.5 / M3.6.
+4. **M3.5 — Postgres-backed ChainStore (Drizzle).** Replace the in-memory `ChainStore` with a Drizzle-backed implementation against Postgres 16 (Supabase or Neon). Row-level locking for concurrent appends; same `ChainStore` interface. First milestone where the audit chain survives process restart.
+5. **M3.6 — KMS-backed KeyVault adapter.** Replace the in-memory `KeyVault` with a KMS-backed adapter (AWS KMS or equivalent). Per-tenant salts cached in-process behind a KMS-decryption check. First milestone where audit events written before a restart can still be verified after one.
+6. **M4 — Nightly Merkle anchoring.** Per-tenant Merkle root computed and stored to a separate append-only log. Also lands Ed25519 signing of audit records + key rotation procedure (signing was deferred from M2; can no longer be punted past Merkle).
+7. **M5 — External timestamping.** Anchor Merkle roots to an external timestamping authority for third-party verifiability.
+8. **M6 — Auditor view.** Read-only auditor role with delegated, time-boxed access to a customer's chain + replay UI.
 
 Do not skip ahead. Each milestone must be solid before the next is meaningful.
 

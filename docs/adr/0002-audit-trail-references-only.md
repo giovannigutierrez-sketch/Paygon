@@ -139,6 +139,35 @@ If the source system has changed since the event (the source record was edited o
 
 **What M2 explicitly closes:** the M1 cross-tenant correlation gap. As of M2, two tenants with identical payloads produce different hashes, and an attacker with read access to one tenant's chain cannot use it to identify "same value" events in any other tenant's chain.
 
+## M3 implementation status
+
+**Landed (2026-05-02), narrowed scope:** replay protocol against an in-memory mock connector. Postgres-backed `ChainStore` and AWS KMS-backed `KeyVault` adapter are deferred to follow-on milestones (M3.5, M3.6); the in-memory store and in-memory `KeyVault` from M2 are sufficient surface to prove out the canonicalize-and-match flow.
+
+- `src/audit/replay/replay-event.ts` exports `replayEvent(args)` — the pure canonicalize-and-match primitive. Loads the event by id (throws `EventNotFoundError` on miss), filters caller-supplied candidates by re-hashing each candidate's `sourceRecordId` under the per-tenant salt and comparing to `event.sourceRef.sourceRecordIdHash`, then canonicalizes each surviving candidate's payload (`canonical-v1`), HMACs under the tenant salt, and records which candidates matched `beforeHash` / `afterHash`. Returns a `ReplayResult` with two fields: `matches` (per-candidate `{ candidateSourceRecordId, matched: 'before' | 'after' | 'both' }`) and `missing` (subset of `['before', 'after']` that the event had a hash for but no candidate matched).
+- `src/audit/replay/connector.ts` defines the `ReplayConnector` interface — the contract `integration-builder` will fulfill for real connectors. A connector exposes `connectorId` and `fetchCandidates({ sourceRecordIdHash, fetchedAt })`. Connectors cannot invert the salted hash; they enumerate their records and return matches.
+- `src/audit/replay/in-memory-connector.ts` implements an `InMemoryReplayConnector` for dev/test. It is wired to a single tenant + KeyVault at construction (a deliberate constraint — connectors are tenant-scoped in production). Test affordances `add` / `update` / `delete` let integration tests simulate source-side mutation between event-write time and replay time.
+- `src/audit/replay/replay-with-connector.ts` is the orchestrator that combines connector + `replayEvent`. Looks the event up, asks the connector for candidates, delegates to the replay primitive.
+
+**Hard invariants enforced by the replay primitive:**
+
+- Replay does NOT return candidate payloads. The result names which `sourceRecordId` matched which side; the caller already has the payloads. (See the test `replay does NOT return candidate payloads` in `test/integration/audit-trail-m3-replay.test.ts` — it scans `JSON.stringify(result)` for embedded payload values to enforce the invariant.)
+- Replay does NOT log payloads. Locals holding canonical forms / HMAC outputs are short-lived and not surfaced through any error path.
+- Wrong tenant -> zero matches. A connector wired to tenant A cannot replay an event from tenant B because tenant A's salt produces different `sourceRecordIdHash` values. The result is unattributable: empty `matches`, full `missing`.
+- Source drift / deletion is reportable, not exceptional. The chain remains valid; the result simply names which sides the source could no longer reproduce.
+- Unknown event id is the ONLY exception (`EventNotFoundError`). The caller's reference is wrong; there is nothing to replay.
+
+**Test surface:** `test/integration/audit-trail-m3-replay.test.ts` covers happy path (UPDATE + connector with after-state, CREATE + after match, DELETE + before match), source drift, source deletion, wrong-tenant connector, no-op event (`before === after` -> `'both'` match), unknown event id, frozen result invariant, and the no-payload-leak invariant. `test/property/replay-roundtrip.property.test.ts` exercises the canonicalize-and-match flow over arbitrary canonical-v1-safe payloads, plus the cross-tenant unattributability companion property.
+
+**Carried forward into M3.5+:**
+
+- Postgres-backed `ChainStore` (Drizzle) for durability.
+- KMS-backed `KeyVault` adapter so per-tenant salts survive process restart.
+- Ed25519 signing of audit records + key rotation procedure.
+- Real connector implementations (`integration-builder`'s domain) using the M3 contract.
+- Merkle anchoring (M4), external timestamping (M5), auditor view (M6).
+
+**What M3 explicitly closes:** there is now a working canonicalize-and-match read path from the audit chain back to source records, gated by per-tenant salt equality. A processor can take an event id, hand the audit subsystem candidate records from the source system, and get back a structured confirmation of which candidate(s) match the event's recorded hashes — without Paygon ever holding the values past the replay HTTP request.
+
 ## Open questions deferred
 
 - **Manual-entry replay beyond TTL.** Processors who enter values manually in-session lose replay capability after 8h. Whether to extend TTL for "approved-and-submitted" sessions, or require export-to-customer-storage for long-term replay, is a v1 product decision.
