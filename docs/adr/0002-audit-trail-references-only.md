@@ -118,6 +118,27 @@ If the source system has changed since the event (the source record was edited o
 - A CI check validates the event schema against the canonical-form spec for every commit that touches `payload_schema_id` definitions.
 - Any audit event that *would* require raw values to be useful is treated as a design failure — the calling feature must be redesigned, not the audit trail.
 
+## M2 implementation status
+
+**Landed (2026-05-02):** per-tenant salt management.
+
+- `src/audit/salt/key-vault.ts` defines the `KeyVault` interface (`getTenantSalt`, `provisionTenant`) and the `TenantNotProvisionedError` thrown when a caller tries to write before provisioning. Also exports `hashSourceRecordId(keyVault, tenantId, plaintext)` — the canonical helper for filling in `SourceRef.sourceRecordIdHash`.
+- `src/audit/salt/in-memory-key-vault.ts` provides `createInMemoryKeyVault()`. Generates 32 bytes of `crypto.randomBytes` per tenant, stores them in a process-local `Map`, returns defensive copies. Idempotent on re-provision (re-generating would invalidate every prior event for the tenant, which would be catastrophic). Accepts an optional `saltFor` test seed for deterministic test fixtures; production code MUST NOT pass it.
+- `writeAuditEvent(store, keyVault, input, options?)` now takes the `KeyVault` as a required argument, loads the per-tenant salt via `getTenantSalt`, and HMACs canonical payloads under that salt. The writer rejects events for unprovisioned tenants.
+- The legacy `DEV_SALT` constant has been deleted; all references removed.
+- The verifier still does NOT recompute payload hashes (only chain links + recordHash). Full payload-hash re-verification is part of replay (M3+).
+
+**Test surface:** `test/integration/audit-trail-m2.test.ts` covers idempotent provisioning, missing-provisioning errors, two-tenant hash divergence on identical payloads, the `hashSourceRecordId` helper, and defensive-copy behavior. `test/property/cross-tenant-isolation.property.test.ts` exercises the cross-tenant-divergence and within-tenant-determinism invariants over random JSON payloads and random tenant pairs.
+
+**Known limitations carried into M3:**
+
+- The in-memory vault loses all salts on process restart. Production exposure requires a KMS-backed adapter implementing the same `KeyVault` interface — that is the first M3 deliverable.
+- Ed25519 signing of events is still not implemented. Until M3 lands signing + key rotation, integrity rests on the hash chain alone (which is sufficient against a non-privileged tamperer but not against an attacker who can rewrite the entire chain).
+- Replay (canonicalize + match against `before_hash` / `after_hash`) is not implemented. Hashes can be reproduced today only via internal tests.
+- No Merkle anchoring yet. The chain head is not yet checkpointed off-system.
+
+**What M2 explicitly closes:** the M1 cross-tenant correlation gap. As of M2, two tenants with identical payloads produce different hashes, and an attacker with read access to one tenant's chain cannot use it to identify "same value" events in any other tenant's chain.
+
 ## Open questions deferred
 
 - **Manual-entry replay beyond TTL.** Processors who enter values manually in-session lose replay capability after 8h. Whether to extend TTL for "approved-and-submitted" sessions, or require export-to-customer-storage for long-term replay, is a v1 product decision.

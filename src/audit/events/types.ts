@@ -1,6 +1,6 @@
 // Audit event types — see docs/adr/0002-audit-trail-references-only.md.
-// M1 limitation: hashes use a global dev salt, not a per-tenant salt.
-// M2 introduces per-tenant KMS-backed salts.
+// As of M2, all payload + sourceRecordId hashes are HMAC-SHA-256 keyed by
+// the per-tenant salt loaded from the KeyVault (src/audit/salt/key-vault.ts).
 
 export type Sha256Hex = string & { readonly __brand: 'Sha256Hex' };
 export type TenantId = string & { readonly __brand: 'TenantId' };
@@ -34,8 +34,9 @@ export const TARGET_KINDS = [
 export type TargetKind = (typeof TARGET_KINDS)[number];
 
 // Identifies where to fetch source data for replay. The source_record_id is
-// stored as a hash (HMAC under the per-tenant salt in M2; under the dev salt
-// in M1) to prevent leaking client-source IDs that may themselves be PII.
+// stored as a hash (HMAC-SHA-256 under the per-tenant salt) to prevent
+// leaking client-source IDs that may themselves be PII. Use
+// hashSourceRecordId() from src/audit/salt/key-vault.ts to compute it.
 export interface SourceRef {
   readonly connectorId: string;
   readonly sourceRecordIdHash: Sha256Hex;

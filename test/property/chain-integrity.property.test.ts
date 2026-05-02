@@ -25,10 +25,29 @@ import { createInMemoryChainStore } from '../../src/audit/chain/memory-store.js'
 import type { ChainStore } from '../../src/audit/chain/types.js';
 import { writeAuditEvent } from '../../src/audit/chain/writer.js';
 import { verifyChain } from '../../src/audit/chain/verifier.js';
+import type { KeyVault } from '../../src/audit/salt/key-vault.js';
+import { createInMemoryKeyVault } from '../../src/audit/salt/in-memory-key-vault.js';
 
 const TENANT = 'tenant-prop' as TenantId;
 const SESSION = 'sess-prop' as SessionId;
 const ACTOR = 'user-prop' as UserHandle;
+
+async function setupVault(tenantIds: ReadonlyArray<TenantId>): Promise<KeyVault> {
+  const vault = createInMemoryKeyVault({
+    saltFor: (tenantId) => {
+      const buf = new Uint8Array(32);
+      const bytes = new TextEncoder().encode(tenantId);
+      for (let i = 0; i < 32; i++) {
+        buf[i] = (bytes[i % bytes.length] ?? 0) ^ (i * 31);
+      }
+      return buf;
+    },
+  });
+  for (const tenantId of tenantIds) {
+    await vault.provisionTenant(tenantId);
+  }
+  return vault;
+}
 
 function inputFromHours(targetHandle: string, hours: number): AuditEventInput {
   return {
@@ -69,9 +88,12 @@ function readOnlyStore(events: ReadonlyArray<AuditEvent>): ChainStore {
 
 async function buildChain(hours: ReadonlyArray<number>): Promise<AuditEvent[]> {
   const store = createInMemoryChainStore();
+  const vault = await setupVault([TENANT]);
   const events: AuditEvent[] = [];
   for (const h of hours) {
-    events.push(await writeAuditEvent(store, inputFromHours(`h-${events.length}`, h)));
+    events.push(
+      await writeAuditEvent(store, vault, inputFromHours(`h-${events.length}`, h)),
+    );
   }
   return events;
 }

@@ -1,7 +1,9 @@
 // Hashing primitives for the audit chain.
 // SHA-256 for chain links and the GENESIS constant.
-// HMAC-SHA-256 for payload hashes (keyed by the per-tenant salt; in M1, by
-// the global DEV_SALT — see ADR 0002 for the M2 plan).
+// HMAC-SHA-256 for payload hashes, keyed by the per-tenant salt loaded from
+// the KeyVault (see src/audit/salt/key-vault.ts). The salt never appears in
+// this module's API surface — callers pass it as the `key` parameter and
+// must never log or otherwise leak the bytes.
 
 import { createHash, createHmac } from 'node:crypto';
 

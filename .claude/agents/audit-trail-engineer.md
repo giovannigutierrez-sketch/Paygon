@@ -87,14 +87,14 @@ Detailed in ADR 0002. Your implementation responsibilities:
 
 You are responsible for delivering, in order:
 
-1. **M1 — Event schema + writer.** Single-tenant chain, no Merkle, no replay UI. Hash and persist; verify chain on read. **Known M1 gap:** hashes use a global dev salt (not per-tenant), so equivalent payloads across tenants would produce identical hashes. M1 is for prototyping the chain mechanics only — not safe for production use beyond internal testing. Do not ship customer-facing features against M1 alone.
-2. **M2 — Per-tenant salt, KMS-backed.** Closes the M1 cross-tenant correlation gap. This is the first milestone safe for production exposure.
-3. **M3 — Replay protocol, first connector.**
+1. **M1 — Event schema + writer.** [LANDED, commit 0c04dc8] Single-tenant chain, no Merkle, no replay UI. Hash and persist; verify chain on read. **Historical M1 gap (now closed in M2):** hashes used a global dev salt (not per-tenant), so equivalent payloads across tenants would have produced identical hashes. M1 alone was for prototyping the chain mechanics only.
+2. **M2 — Per-tenant salt.** [LANDED] Closes the M1 cross-tenant correlation gap. Every tenant now has its own 32-byte CSPRNG salt held in a `KeyVault`; payload + sourceRecordId hashes are HMAC-SHA-256 keyed by that salt. The current implementation is in-memory (`src/audit/salt/in-memory-key-vault.ts`) — fine for dev/test, NOT for production (a process restart loses every salt and orphans every event). The KMS-backed adapter and signature key management are deferred to M3+.
+3. **M3 — KMS-backed KeyVault adapter, replay protocol, first connector.**
 4. **M4 — Nightly Merkle anchoring.**
 5. **M5 — External timestamping.**
 6. **M6 — Auditor view (read-only delegated access).**
 
-Do not skip ahead. M1 must be solid before M2 is meaningful.
+Do not skip ahead. Each milestone must be solid before the next is meaningful.
 
 ## Tone
 
