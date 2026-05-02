@@ -1,0 +1,51 @@
+{
+  "id": "fica-spec-example-c-addl-medicare-threshold-crossing",
+  "description": "FICA spec Example C — period crosses the $200,000 Additional Medicare threshold. $15,000 monthly with $190,000 YTD prior (already over SS base of $184,500). SS = $0 each side; Medicare $217.50 each side; Additional Medicare $45.00 employee-only — explicitly NO employer match on the 0.9%.",
+  "source": "docs/payroll-semantics/fica-social-security-and-medicare.md, Worked Example C",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-10-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "MONTHLY",
+    "gross_wages_this_period": "15000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "190000.00",
+    "ytd_futa_wages_before_period": "7000.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "2833.17",
+      "fica_social_security": "0.00",
+      "fica_medicare": "217.50",
+      "fica_additional_medicare": "45.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "0.00",
+      "fica_medicare_match": "217.50",
+      "futa": "0.00"
+    },
+    "trace_steps": [
+      "fit annualize: 15000 * 12 = 180000",
+      "fit table SMS standard, row [113200, 209275): tentative 17966 + 0.24 over 113200",
+      "fit tentative: 17966 + 0.24*(180000-113200) = 17966 + 16032 = 33998",
+      "fit deannualize: 33998 / 12 = 2833.1666... → 2833.17",
+      "ss_remaining_base: max(184500.00 - 190000.00, 0) = 0",
+      "ss_taxable: min(15000.00, 0) = 0; ss_employee = 0; ss_employer = 0",
+      "medicare_employee: 15000.00 * 0.0145 = 217.50",
+      "medicare_employer: 15000.00 * 0.0145 = 217.50",
+      "addl_medicare differential: max(205000-200000, 0) - max(190000-200000, 0) = 5000 - 0 = 5000",
+      "addl_medicare_tax: 5000 * 0.009 = 45.00 (EMPLOYEE ONLY — no employer match)",
+      "futa: ytd_futa 7000.00 at base; tax = 0.00"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "futa-spec-example-f-full-credit-loss-via-rate-input",
+  "description": "FUTA spec Example F — employer lost the full 5.4% state-credit due to untimely SUTA. The v1 engine contract does not expose a `stateUiPaidTimely` knob; this scenario is modeled here by setting `futa_credit_reduction_percent = 0.054`, which mathematically produces the spec's effective rate of 6.0%. $4,000 × 0.060 = $240.00 FUTA.",
+  "source": "docs/payroll-semantics/futa.md, Worked Example F (modeled via credit-reduction knob)",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-09-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.054"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "4000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "613.15",
+      "fica_social_security": "248.00",
+      "fica_medicare": "58.00",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "248.00",
+      "fica_medicare_match": "58.00",
+      "futa": "240.00"
+    },
+    "trace_steps": [
+      "fit annualize: 4000 * 26 = 104000",
+      "fit table SMS standard, row [57900, 113200): tentative 5800 + 0.22 over 57900",
+      "fit tentative: 5800 + 0.22*(104000-57900) = 5800 + 10142 = 15942",
+      "fit deannualize: 15942 / 26 = 613.1538... → 613.15",
+      "fica_ss: 4000 * 0.062 = 248.00",
+      "fica_medicare: 4000 * 0.0145 = 58.00",
+      "futa effective rate: 0.006 + 0.054 = 0.060 (full credit loss)",
+      "futa remaining base: 7000",
+      "futa taxable: min(4000, 7000) = 4000",
+      "futa: 4000 * 0.060 = 240.00"
+    ]
+  }
+}

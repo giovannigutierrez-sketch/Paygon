@@ -1,0 +1,50 @@
+{
+  "id": "fica-spec-example-d-fully-above-addl-medicare-threshold",
+  "description": "FICA spec Example D — period entirely above the $200,000 Additional Medicare threshold. $20,000 monthly, $250,000 YTD prior. All $20K subject to 0.9% Additional Medicare; SS taxable = 0; employee Medicare $290 + addl $180; employer matches Medicare $290 only.",
+  "source": "docs/payroll-semantics/fica-social-security-and-medicare.md, Worked Example D",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-11-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "MONTHLY",
+    "gross_wages_this_period": "20000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "250000.00",
+    "ytd_futa_wages_before_period": "7000.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "4238.00",
+      "fica_social_security": "0.00",
+      "fica_medicare": "290.00",
+      "fica_additional_medicare": "180.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "0.00",
+      "fica_medicare_match": "290.00",
+      "futa": "0.00"
+    },
+    "trace_steps": [
+      "fit annualize: 20000 * 12 = 240000",
+      "fit table SMS standard, row [209275, 263725): tentative 41024 + 0.32 over 209275",
+      "fit tentative: 41024 + 0.32*(240000-209275) = 41024 + 9832 = 50856",
+      "fit deannualize: 50856 / 12 = 4238.00",
+      "ss_remaining_base: max(184500.00 - 250000.00, 0) = 0; ss_employee = ss_employer = 0",
+      "medicare_employee: 20000.00 * 0.0145 = 290.00",
+      "medicare_employer: 20000.00 * 0.0145 = 290.00",
+      "addl_medicare differential: max(270000-200000, 0) - max(250000-200000, 0) = 70000 - 50000 = 20000",
+      "addl_medicare_tax: 20000 * 0.009 = 180.00 (employee only)",
+      "futa: ytd_futa 7000.00 at base; tax = 0.00"
+    ]
+  }
+}

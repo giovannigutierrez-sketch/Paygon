@@ -1,0 +1,50 @@
+{
+  "id": "futa-spec-example-e-credit-reduction-state",
+  "description": "FUTA spec Example E — credit reduction state with 0.3% reduction. Effective FUTA rate climbs to 0.9%; $2,500 biweekly × 0.009 = $22.50. Verifies the credit-reduction percent flows from employer_config into the calc.",
+  "source": "docs/payroll-semantics/futa.md, Worked Example E",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-08-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.003"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "2500.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "283.15",
+      "fica_social_security": "155.00",
+      "fica_medicare": "36.25",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "155.00",
+      "fica_medicare_match": "36.25",
+      "futa": "22.50"
+    },
+    "trace_steps": [
+      "fit annualize: 2500 * 26 = 65000",
+      "fit table SMS standard, row [57900, 113200): tentative 5800 + 0.22 over 57900",
+      "fit tentative: 5800 + 0.22*(65000-57900) = 5800 + 1562 = 7362",
+      "fit deannualize: 7362 / 26 = 283.1538... → 283.15",
+      "fica_ss: 2500 * 0.062 = 155.00",
+      "fica_medicare: 2500 * 0.0145 = 36.25",
+      "futa effective rate: 0.006 + 0.003 = 0.009 (CREDIT REDUCTION STATE)",
+      "futa remaining base: max(7000 - 0, 0) = 7000",
+      "futa taxable: min(2500, 7000) = 2500",
+      "futa: 2500 * 0.009 = 22.50"
+    ]
+  }
+}

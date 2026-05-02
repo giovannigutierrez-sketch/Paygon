@@ -1,0 +1,50 @@
+{
+  "id": "futa-spec-example-c-post-7k-zero",
+  "description": "FUTA spec Example C — employee already over $7,000 ytd_futa; period FUTA is $0.00 even though there's $3,000 of FICA wages. Tests the boundary clamp.",
+  "source": "docs/payroll-semantics/futa.md, Worked Example C",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-05-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "3000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "9500.00",
+    "ytd_futa_wages_before_period": "9500.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "393.15",
+      "fica_social_security": "186.00",
+      "fica_medicare": "43.50",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "186.00",
+      "fica_medicare_match": "43.50",
+      "futa": "0.00"
+    },
+    "trace_steps": [
+      "fit annualize: 3000 * 26 = 78000",
+      "fit table SMS standard, row [57900, 113200): tentative 5800 + 0.22 over 57900",
+      "fit tentative: 5800 + 0.22*(78000-57900) = 5800 + 4422 = 10222",
+      "fit deannualize: 10222 / 26 = 393.1538... → 393.15",
+      "fica_ss: 3000 * 0.062 = 186.00",
+      "fica_medicare: 3000 * 0.0145 = 43.50",
+      "futa effective rate: 0.006",
+      "futa remaining base: max(7000 - 9500, 0) = 0",
+      "futa taxable: min(3000, 0) = 0",
+      "futa: 0 * 0.006 = 0.00"
+    ]
+  }
+}

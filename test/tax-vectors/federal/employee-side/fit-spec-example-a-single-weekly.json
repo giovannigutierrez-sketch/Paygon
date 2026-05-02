@@ -1,0 +1,56 @@
+{
+  "id": "fit-spec-example-a-single-weekly",
+  "description": "FIT spec Example A — Single weekly $1,500/wk, no W-4 adjustments. Annualized $78,000 lands in SMS standard 22% bracket; per-period withholding rounds to $196.58.",
+  "source": "docs/payroll-semantics/federal-income-tax-withholding.md, Worked Example A",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-01-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "WEEKLY",
+    "gross_wages_this_period": "1500.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "196.58",
+      "fica_social_security": "93.00",
+      "fica_medicare": "21.75",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "93.00",
+      "fica_medicare_match": "21.75",
+      "futa": "9.00"
+    },
+    "trace_steps": [
+      "annualize: 1500.00 * 52 = 78000.00 (line 1c)",
+      "add step4a other income: 78000.00 + 0 = 78000.00 (line 1d)",
+      "subtract step4b deductions: 78000.00 - 0 = 78000.00 (line 1f)",
+      "clamp_nonneg: max(78000.00, 0) = 78000.00 (line 1g)",
+      "fit_table: SMS standard, row [57900, 113200) → tentative 5800.00 + 0.22 over 57900",
+      "tentative_tax: 5800.00 + 0.22 * (78000.00 - 57900.00) = 10222.00 (line 1h/1i)",
+      "step3 credit clamp: max(10222.00 - 0, 0) = 10222.00 (line 1k)",
+      "deannualize: 10222.00 / 52 = 196.5769230769... (line 1l)",
+      "add step4c extra: 196.5769230769... + 0 = 196.5769230769... (line 1n)",
+      "round HALF_UP to cents: 196.58",
+      "fica_ss_employee: min(1500.00, 184500-0) * 0.062 = 93.00",
+      "fica_ss_employer: same base × 0.062 = 93.00 (matched)",
+      "fica_medicare_employee: 1500.00 * 0.0145 = 21.75",
+      "fica_medicare_employer: 1500.00 * 0.0145 = 21.75 (matched)",
+      "addl_medicare: post YTD 1500.00 < 200000.00 → 0.00",
+      "futa: min(1500.00, 7000-0) * (0.006 + 0.000) = 9.00"
+    ]
+  }
+}

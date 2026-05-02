@@ -1,0 +1,52 @@
+{
+  "id": "fit-spec-example-c-hoh-semimonthly-step3-step4c",
+  "description": "FIT spec Example C — HOH semimonthly $2,800 with Step 3 dependents $4,500, Step 4(a) other income $1,200, Step 4(b) deductions $2,000, Step 4(c) extra $25. All four W-4 levers exercised.",
+  "source": "docs/payroll-semantics/federal-income-tax-withholding.md, Worked Example C",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-03-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "SEMIMONTHLY",
+    "gross_wages_this_period": "2800.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "HEAD_OF_HOUSEHOLD",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "4500.00",
+      "step4a_other_income": "1200.00",
+      "step4b_deductions": "2000.00",
+      "step4c_extra_withholding": "25.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "77.00",
+      "fica_social_security": "173.60",
+      "fica_medicare": "40.60",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "173.60",
+      "fica_medicare_match": "40.60",
+      "futa": "16.80"
+    },
+    "trace_steps": [
+      "annualize: 2800.00 * 24 = 67200.00 (line 1c)",
+      "add step4a: 67200.00 + 1200.00 = 68400.00 (line 1d)",
+      "subtract step4b: 68400.00 - 2000.00 = 66400.00 (line 1f/1g)",
+      "fit_table: HOH standard, row [33250, 83000) → 1770.00 + 0.12 over 33250",
+      "tentative_tax: 1770.00 + 0.12 * (66400.00 - 33250.00) = 5748.00 (line 1h)",
+      "step3 credit: max(5748.00 - 4500.00, 0) = 1248.00 (line 1k)",
+      "deannualize: 1248.00 / 24 = 52.00 (line 1l)",
+      "add step4c: 52.00 + 25.00 = 77.00 (line 1n)",
+      "round: 77.00",
+      "fica_ss: 2800.00 * 0.062 = 173.60 (both sides)",
+      "fica_medicare: 2800.00 * 0.0145 = 40.60 (both sides)",
+      "futa: min(2800.00, 7000-0) * 0.006 = 16.80"
+    ]
+  }
+}

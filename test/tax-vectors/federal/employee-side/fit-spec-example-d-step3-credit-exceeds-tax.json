@@ -1,0 +1,52 @@
+{
+  "id": "fit-spec-example-d-step3-credit-exceeds-tax",
+  "description": "FIT spec Example D — MFJ weekly $900 with three qualifying children ($6,000 Step 3 credit). Tentative tax $2,804 < credit $6,000; line 1k clamps at 0; final FIT withholding $0.00.",
+  "source": "docs/payroll-semantics/federal-income-tax-withholding.md, Worked Example D",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-04-01",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "WEEKLY",
+    "gross_wages_this_period": "900.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "MARRIED_FILING_JOINTLY",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "6000.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "0.00",
+      "fica_social_security": "55.80",
+      "fica_medicare": "13.05",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "55.80",
+      "fica_medicare_match": "13.05",
+      "futa": "5.40"
+    },
+    "trace_steps": [
+      "annualize: 900.00 * 52 = 46800.00 (line 1c)",
+      "no step4a/4b: 46800.00 (line 1g)",
+      "fit_table: MFJ standard, row [44100, 120100) → 2480.00 + 0.12 over 44100",
+      "tentative_tax: 2480.00 + 0.12 * (46800.00 - 44100.00) = 2804.00 (line 1h)",
+      "step3 credit clamp: max(2804.00 - 6000.00, 0) = 0.00 (line 1k)",
+      "deannualize: 0 / 52 = 0",
+      "add step4c: 0 + 0 = 0",
+      "round: 0.00",
+      "unused dependent credit ($3,196) is recovered on Form 1040 — not by Paygon",
+      "fica_ss: 900.00 * 0.062 = 55.80 (both sides)",
+      "fica_medicare: 900.00 * 0.0145 = 13.05 (both sides)",
+      "futa: min(900.00, 7000-0) * 0.006 = 5.40"
+    ]
+  }
+}

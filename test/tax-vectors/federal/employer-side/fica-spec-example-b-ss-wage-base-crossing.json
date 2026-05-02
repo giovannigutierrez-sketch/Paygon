@@ -1,0 +1,52 @@
+{
+  "id": "fica-spec-example-b-ss-wage-base-crossing",
+  "description": "FICA spec Example B — period straddles 2026 Social Security wage base $184,500. $10,000 monthly with $180,000 YTD prior. Only the $4,500 below-base slice is SS-taxable; $279.00 each side. Medicare full $145.00 each side. Additional Medicare still $0 (post YTD $190,000 < $200,000).",
+  "source": "docs/payroll-semantics/fica-social-security-and-medicare.md, Worked Example B",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-09-15",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "MONTHLY",
+    "gross_wages_this_period": "10000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "180000.00",
+    "ytd_futa_wages_before_period": "7000.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "1633.17",
+      "fica_social_security": "279.00",
+      "fica_medicare": "145.00",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "279.00",
+      "fica_medicare_match": "145.00",
+      "futa": "0.00"
+    },
+    "trace_steps": [
+      "fit annualize: 10000 * 12 = 120000",
+      "fit table SMS standard, row [113200, 209275): tentative 17966 + 0.24 over 113200",
+      "fit tentative: 17966 + 0.24*(120000-113200) = 17966 + 1632 = 19598",
+      "fit deannualize: 19598 / 12 = 1633.1666... → round HALF_UP = 1633.17",
+      "ss_remaining_base: max(184500.00 - 180000.00, 0) = 4500.00",
+      "ss_taxable_this_period: min(10000.00, 4500.00) = 4500.00",
+      "fica_ss_employee: 4500.00 * 0.062 = 279.00",
+      "fica_ss_employer: 4500.00 * 0.062 = 279.00 (matched on the same capped base)",
+      "fica_medicare_employee: 10000.00 * 0.0145 = 145.00 (no Medicare cap)",
+      "fica_medicare_employer: 10000.00 * 0.0145 = 145.00",
+      "addl_medicare: max(190000-200000, 0) - max(180000-200000, 0) = 0; tax = 0.00",
+      "futa: ytd_futa 7000.00 already at base; tax = 0.00"
+    ]
+  }
+}

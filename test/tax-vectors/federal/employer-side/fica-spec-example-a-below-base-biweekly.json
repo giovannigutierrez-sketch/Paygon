@@ -1,0 +1,51 @@
+{
+  "id": "fica-spec-example-a-below-base-biweekly",
+  "description": "FICA spec Example A — biweekly $4,000 with $40,000 YTD prior, no FUTA wages remaining. Employee well below SS base and Additional Medicare threshold; both sides match in lockstep on FICA. (W-4 picked as SMS no-adjustments; FIT precomputed for the joint vector.)",
+  "source": "docs/payroll-semantics/fica-social-security-and-medicare.md, Worked Example A",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-06-01",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "4000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "40000.00",
+    "ytd_futa_wages_before_period": "7000.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "613.15",
+      "fica_social_security": "248.00",
+      "fica_medicare": "58.00",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "248.00",
+      "fica_medicare_match": "58.00",
+      "futa": "0.00"
+    },
+    "trace_steps": [
+      "fit annualize: 4000 * 26 = 104000",
+      "fit table SMS standard, row [57900, 113200): tentative 5800 + 0.22 over 57900",
+      "fit tentative: 5800 + 0.22*(104000-57900) = 5800 + 10142 = 15942",
+      "fit deannualize: 15942 / 26 = 613.1538461538... → round HALF_UP = 613.15",
+      "fica_ss_taxable: min(4000.00, 184500.00 - 40000.00) = 4000.00",
+      "fica_ss_employee: 4000.00 * 0.062 = 248.00",
+      "fica_ss_employer: 4000.00 * 0.062 = 248.00 (matched)",
+      "fica_medicare_employee: 4000.00 * 0.0145 = 58.00",
+      "fica_medicare_employer: 4000.00 * 0.0145 = 58.00 (matched)",
+      "addl_medicare: max(44000-200000, 0) - max(40000-200000, 0) = 0; tax = 0.00",
+      "futa: ytd_futa 7000.00 at base; remaining = 0; tax = 0.00"
+    ]
+  }
+}

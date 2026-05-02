@@ -1,0 +1,93 @@
+{
+  "ruleSetVersion": "federal-2026",
+  "effectiveFrom": "2026-01-01",
+  "effectiveUntil": null,
+  "source": "IRS Pub 15-T (2026) Tables 4 and 5; IRS Pub 15 (2026); SSA Press Release October 2025 (2026 wage base $184,500); Form 941 instructions (2026); 26 U.S.C. §3101 §3102(f) §3111 §3121(a)(1) §3301 §3302 §3306(b)(1)",
+  "fica": {
+    "socialSecurity": {
+      "rate": "0.062",
+      "wageBase": "184500"
+    },
+    "medicare": {
+      "rate": "0.0145"
+    },
+    "additionalMedicare": {
+      "rate": "0.009",
+      "thresholdYTD": "200000"
+    }
+  },
+  "futa": {
+    "grossRate": "0.060",
+    "stateCredit": "0.054",
+    "wageBase": "7000"
+  },
+  "fit": {
+    "method": "percentage-method-automated-payroll",
+    "schedules": {
+      "standard": {
+        "MARRIED_FILING_JOINTLY": [
+          { "atLeast": "0",      "lessThan": "19300",    "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "19300",  "lessThan": "44100",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "19300" },
+          { "atLeast": "44100",  "lessThan": "120100",   "tentativeTax": "2480.00",    "rate": "0.12", "ofExcessOver": "44100" },
+          { "atLeast": "120100", "lessThan": "230700",   "tentativeTax": "11600.00",   "rate": "0.22", "ofExcessOver": "120100" },
+          { "atLeast": "230700", "lessThan": "422850",   "tentativeTax": "35932.00",   "rate": "0.24", "ofExcessOver": "230700" },
+          { "atLeast": "422850", "lessThan": "531750",   "tentativeTax": "82048.00",   "rate": "0.32", "ofExcessOver": "422850" },
+          { "atLeast": "531750", "lessThan": "788000",   "tentativeTax": "116896.00",  "rate": "0.35", "ofExcessOver": "531750" },
+          { "atLeast": "788000", "lessThan": "Infinity", "tentativeTax": "206583.50",  "rate": "0.37", "ofExcessOver": "788000" }
+        ],
+        "SINGLE_OR_MFS": [
+          { "atLeast": "0",      "lessThan": "7500",     "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "7500",   "lessThan": "19900",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "7500" },
+          { "atLeast": "19900",  "lessThan": "57900",    "tentativeTax": "1240.00",    "rate": "0.12", "ofExcessOver": "19900" },
+          { "atLeast": "57900",  "lessThan": "113200",   "tentativeTax": "5800.00",    "rate": "0.22", "ofExcessOver": "57900" },
+          { "atLeast": "113200", "lessThan": "209275",   "tentativeTax": "17966.00",   "rate": "0.24", "ofExcessOver": "113200" },
+          { "atLeast": "209275", "lessThan": "263725",   "tentativeTax": "41024.00",   "rate": "0.32", "ofExcessOver": "209275" },
+          { "atLeast": "263725", "lessThan": "648100",   "tentativeTax": "58448.00",   "rate": "0.35", "ofExcessOver": "263725" },
+          { "atLeast": "648100", "lessThan": "Infinity", "tentativeTax": "192979.25",  "rate": "0.37", "ofExcessOver": "648100" }
+        ],
+        "HEAD_OF_HOUSEHOLD": [
+          { "atLeast": "0",      "lessThan": "15550",    "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "15550",  "lessThan": "33250",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "15550" },
+          { "atLeast": "33250",  "lessThan": "83000",    "tentativeTax": "1770.00",    "rate": "0.12", "ofExcessOver": "33250" },
+          { "atLeast": "83000",  "lessThan": "121250",   "tentativeTax": "7740.00",    "rate": "0.22", "ofExcessOver": "83000" },
+          { "atLeast": "121250", "lessThan": "217300",   "tentativeTax": "16155.00",   "rate": "0.24", "ofExcessOver": "121250" },
+          { "atLeast": "217300", "lessThan": "271750",   "tentativeTax": "39207.00",   "rate": "0.32", "ofExcessOver": "217300" },
+          { "atLeast": "271750", "lessThan": "656150",   "tentativeTax": "56631.00",   "rate": "0.35", "ofExcessOver": "271750" },
+          { "atLeast": "656150", "lessThan": "Infinity", "tentativeTax": "191171.00",  "rate": "0.37", "ofExcessOver": "656150" }
+        ]
+      },
+      "step2Checkbox": {
+        "MARRIED_FILING_JOINTLY": [
+          { "atLeast": "0",      "lessThan": "16100",    "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "16100",  "lessThan": "28500",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "16100" },
+          { "atLeast": "28500",  "lessThan": "66500",    "tentativeTax": "1240.00",    "rate": "0.12", "ofExcessOver": "28500" },
+          { "atLeast": "66500",  "lessThan": "121800",   "tentativeTax": "5800.00",    "rate": "0.22", "ofExcessOver": "66500" },
+          { "atLeast": "121800", "lessThan": "217875",   "tentativeTax": "17966.00",   "rate": "0.24", "ofExcessOver": "121800" },
+          { "atLeast": "217875", "lessThan": "272325",   "tentativeTax": "41024.00",   "rate": "0.32", "ofExcessOver": "217875" },
+          { "atLeast": "272325", "lessThan": "400450",   "tentativeTax": "58448.00",   "rate": "0.35", "ofExcessOver": "272325" },
+          { "atLeast": "400450", "lessThan": "Infinity", "tentativeTax": "103291.75",  "rate": "0.37", "ofExcessOver": "400450" }
+        ],
+        "SINGLE_OR_MFS": [
+          { "atLeast": "0",      "lessThan": "8050",     "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "8050",   "lessThan": "14250",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "8050" },
+          { "atLeast": "14250",  "lessThan": "33250",    "tentativeTax": "620.00",     "rate": "0.12", "ofExcessOver": "14250" },
+          { "atLeast": "33250",  "lessThan": "60900",    "tentativeTax": "2900.00",    "rate": "0.22", "ofExcessOver": "33250" },
+          { "atLeast": "60900",  "lessThan": "108938",   "tentativeTax": "8983.00",    "rate": "0.24", "ofExcessOver": "60900" },
+          { "atLeast": "108938", "lessThan": "136163",   "tentativeTax": "20512.00",   "rate": "0.32", "ofExcessOver": "108938" },
+          { "atLeast": "136163", "lessThan": "328350",   "tentativeTax": "29224.00",   "rate": "0.35", "ofExcessOver": "136163" },
+          { "atLeast": "328350", "lessThan": "Infinity", "tentativeTax": "96489.63",   "rate": "0.37", "ofExcessOver": "328350" }
+        ],
+        "HEAD_OF_HOUSEHOLD": [
+          { "atLeast": "0",      "lessThan": "12075",    "tentativeTax": "0.00",       "rate": "0.00", "ofExcessOver": "0" },
+          { "atLeast": "12075",  "lessThan": "20925",    "tentativeTax": "0.00",       "rate": "0.10", "ofExcessOver": "12075" },
+          { "atLeast": "20925",  "lessThan": "45800",    "tentativeTax": "885.00",     "rate": "0.12", "ofExcessOver": "20925" },
+          { "atLeast": "45800",  "lessThan": "64925",    "tentativeTax": "3870.00",    "rate": "0.22", "ofExcessOver": "45800" },
+          { "atLeast": "64925",  "lessThan": "112950",   "tentativeTax": "8077.50",    "rate": "0.24", "ofExcessOver": "64925" },
+          { "atLeast": "112950", "lessThan": "140175",   "tentativeTax": "19603.50",   "rate": "0.32", "ofExcessOver": "112950" },
+          { "atLeast": "140175", "lessThan": "332375",   "tentativeTax": "28315.50",   "rate": "0.35", "ofExcessOver": "140175" },
+          { "atLeast": "332375", "lessThan": "Infinity", "tentativeTax": "95585.50",   "rate": "0.37", "ofExcessOver": "332375" }
+        ]
+      }
+    }
+  }
+}

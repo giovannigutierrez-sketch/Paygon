@@ -1,0 +1,54 @@
+{
+  "id": "fit-spec-example-b-mfj-biweekly-step2",
+  "description": "FIT spec Example B — MFJ biweekly $3,200, Step 2 checkbox set. Annualized $83,200 lands in MFJ Step-2 22% bracket; per-period withholding $364.38.",
+  "source": "docs/payroll-semantics/federal-income-tax-withholding.md, Worked Example B",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-02-01",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "3200.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "0.00",
+    "ytd_futa_wages_before_period": "0.00",
+    "w4": {
+      "filing_status": "MARRIED_FILING_JOINTLY",
+      "step2_checkbox": true,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "364.38",
+      "fica_social_security": "198.40",
+      "fica_medicare": "46.40",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "198.40",
+      "fica_medicare_match": "46.40",
+      "futa": "19.20"
+    },
+    "trace_steps": [
+      "annualize: 3200.00 * 26 = 83200.00 (line 1c)",
+      "add step4a: 83200.00 + 0 = 83200.00 (line 1d)",
+      "subtract step4b: 83200.00 - 0 = 83200.00 (line 1f)",
+      "clamp_nonneg: 83200.00 (line 1g)",
+      "fit_table: MFJ Step-2-Checkbox, row [66500, 121800) → 5800.00 + 0.22 over 66500",
+      "tentative_tax: 5800.00 + 0.22 * (83200.00 - 66500.00) = 9474.00 (line 1h)",
+      "step3 credit clamp: 9474.00 - 0 = 9474.00 (line 1k)",
+      "deannualize: 9474.00 / 26 = 364.3846153846... (line 1l)",
+      "add step4c: 364.3846... + 0 = 364.3846... (line 1n)",
+      "round: 364.38",
+      "fica_ss: min(3200.00, 184500-0) * 0.062 = 198.40 (both sides)",
+      "fica_medicare: 3200.00 * 0.0145 = 46.40 (both sides)",
+      "addl_medicare: post YTD 3200.00 < 200000.00 → 0.00",
+      "futa: min(3200.00, 7000-0) * 0.006 = 19.20"
+    ]
+  }
+}

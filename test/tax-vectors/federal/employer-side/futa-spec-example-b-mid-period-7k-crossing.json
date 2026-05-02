@@ -1,0 +1,51 @@
+{
+  "id": "futa-spec-example-b-mid-period-7k-crossing",
+  "description": "FUTA spec Example B — period crosses the $7,000 base. $2,000 biweekly, $6,000 ytd_futa prior; only the $1,000 below-base slice is taxable; FUTA $6.00.",
+  "source": "docs/payroll-semantics/futa.md, Worked Example B",
+  "rule_set_version": "federal-2026",
+  "effective_date": "2026-04-01",
+  "employer_config_snapshot": {
+    "futa_credit_reduction_percent": "0.000"
+  },
+  "input": {
+    "pay_frequency": "BIWEEKLY",
+    "gross_wages_this_period": "2000.00",
+    "pretax_deductions_this_period": "0.00",
+    "ytd_wages_before_period": "6000.00",
+    "ytd_futa_wages_before_period": "6000.00",
+    "w4": {
+      "filing_status": "SINGLE_OR_MFS",
+      "step2_checkbox": false,
+      "step3_dependents_credit": "0.00",
+      "step4a_other_income": "0.00",
+      "step4b_deductions": "0.00",
+      "step4c_extra_withholding": "0.00"
+    }
+  },
+  "expected": {
+    "employee_side": {
+      "federal_income_tax": "195.85",
+      "fica_social_security": "124.00",
+      "fica_medicare": "29.00",
+      "fica_additional_medicare": "0.00"
+    },
+    "employer_side": {
+      "fica_social_security_match": "124.00",
+      "fica_medicare_match": "29.00",
+      "futa": "6.00"
+    },
+    "trace_steps": [
+      "fit annualize: 2000 * 26 = 52000",
+      "fit table SMS standard, row [19900, 57900): tentative 1240 + 0.12 over 19900",
+      "fit tentative: 1240 + 0.12*(52000-19900) = 1240 + 3852 = 5092",
+      "fit deannualize: 5092 / 26 = 195.8461538... → HALF_UP = 195.85",
+      "fica_ss: 2000 * 0.062 = 124.00",
+      "fica_medicare: 2000 * 0.0145 = 29.00",
+      "addl_medicare: post YTD 8000 < 200000 → 0.00",
+      "futa effective rate: 0.006",
+      "futa remaining base: max(7000 - 6000, 0) = 1000",
+      "futa taxable: min(2000, 1000) = 1000",
+      "futa: 1000 * 0.006 = 6.00"
+    ]
+  }
+}
