@@ -13,7 +13,7 @@ Paygon's tax engine computes **both sides** of every payroll: employee withholdi
 
 ### Federal — employee side
 - Federal income tax withholding (IRS Pub 15-T)
-- FICA employee: Social Security 6.2% up to wage base ($168,600 in 2026); Medicare 1.45% all wages, +0.9% Additional Medicare Tax on wages over $200,000 (no employer match on the additional 0.9%)
+- FICA employee: Social Security 6.2% up to wage base ($184,500 in 2026 per the SSA October 2025 COLA announcement; verify against the 2026 SSA fact sheet at landing time); Medicare 1.45% all wages, +0.9% Additional Medicare Tax on wages over $200,000 (no employer match on the additional 0.9%)
 - Pre-tax deduction handling per IRS Pub 15 / 15-B (§125 cafeteria, §401(k), HSA, etc.)
 
 ### Federal — employer side
