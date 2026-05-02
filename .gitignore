@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.tsbuildinfo
+
+# Test output
+coverage/
+.nyc_output/
+*.lcov
+
+# Environment files — NEVER commit
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Local data — payroll PII must never enter the repo
+local-data/
+*.local
+scratch/
+sandbox-data/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.prettiercache
+
+# Vite / Vitest
+.vite/
+.vitest/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock

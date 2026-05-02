@@ -1,0 +1,35 @@
+{
+  "name": "paygon",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Workflow engine for payroll processors at mid-size service bureaus. Stateless cockpit; clients own their data.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/giovannigutierrez-sketch/Paygon.git"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\""
+  },
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@vitest/coverage-v8": "^2.1.5",
+    "fast-check": "^3.23.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
