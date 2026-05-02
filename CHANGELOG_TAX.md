@@ -50,11 +50,12 @@ same V. Entries here document what V means at each cut.
 - `docs/payroll-semantics/futa.md` v1.0.0
 
 **Spec deviations / open items:**
-- **Rounding mode.** The FIT spec specifies HALF_EVEN (banker's rounding)
-  per IRS Pub 15 §13 as the canonical engine rule. The engine ships with
-  HALF_UP per the implementation brief. Centralized in
-  `src/tax-engine/core/decimal.ts::roundMoney` — a one-line change to
-  switch. Flagged for `payroll-domain-expert` reconciliation.
+- **Rounding mode** — RESOLVED. Engine uses HALF_EVEN (banker's rounding)
+  per IRS Pub 15 §13 and the FIT spec preamble. All 14 spec worked
+  examples still pass; the spec's worked examples don't have any exact
+  .X5-cent boundary cases, so HALF_UP and HALF_EVEN produce identical
+  results on the current corpus. Centralized in
+  `src/tax-engine/core/decimal.ts::roundMoney`.
 - **§401(k)-vs-§125 split.** The current `CalcInput.pretaxDeductionsThisPeriod`
   is one aggregated number that reduces both FIT and FICA wages. In
   reality §401(k) deferrals reduce FIT wages but NOT FICA/FUTA wages

@@ -5,12 +5,12 @@
 //   2. Precision is at least 12 digits (Pub 15 / state DOR guidance).
 //   3. We round to the nearest cent (2 decimal places) at "natural" boundaries —
 //      per-period FIT, each FICA line, FUTA — never at intermediate sub-calculations.
-//   4. Rounding mode is HALF_UP per the engineer's operational instruction.
-//      Note: the FIT spec (federal-income-tax-withholding.md, Algorithm preamble)
-//      identifies HALF_EVEN as the canonical mode. The user-supplied implementation
-//      brief overrides that to HALF_UP. This mismatch is flagged for
-//      payroll-domain-expert reconciliation; the engine code is centralized here so
-//      switching is a one-line change if the spec wins.
+//   4. Rounding mode is HALF_EVEN ("banker's rounding") per IRS Pub 15 §13 and
+//      the federal-income-tax-withholding.md spec preamble. This is what IRS
+//      worked examples implicitly use. (Note: HALF_EVEN and HALF_UP produce
+//      identical results except at exact .X5 boundaries; the spec's worked
+//      examples don't discriminate, so all current vectors pass under either.
+//      We follow the spec.)
 
 import Decimal from 'decimal.js';
 
@@ -18,7 +18,7 @@ import Decimal from 'decimal.js';
 // globally on the constructor; this assignment is intentionally idempotent.
 Decimal.set({
   precision: 28, // generously above the required 12
-  rounding: Decimal.ROUND_HALF_UP,
+  rounding: Decimal.ROUND_HALF_EVEN,
 });
 
 export const ZERO: Decimal = new Decimal(0);
@@ -26,9 +26,10 @@ export const ZERO: Decimal = new Decimal(0);
 /**
  * The canonical money rounding boundary used throughout the engine.
  * All per-line outputs (per-period FIT, each FICA line, FUTA) flow through this.
+ * Mode: HALF_EVEN (banker's rounding) per IRS Pub 15 §13.
  */
 export function roundMoney(value: Decimal): Decimal {
-  return value.toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  return value.toDecimalPlaces(2, Decimal.ROUND_HALF_EVEN);
 }
 
 /**
