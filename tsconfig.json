@@ -3,9 +3,14 @@
     "target": "ES2023",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "outDir": "./dist",
     "rootDir": ".",
+
+    "jsx": "preserve",
+    "allowJs": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -25,9 +30,12 @@
     "declarationMap": true,
     "sourceMap": true,
 
-    "incremental": true,
-    "tsBuildInfoFile": "./.tsbuildinfo"
+    "paths": {
+      "@ui/*": ["./src/ui/*"]
+    },
+
+    "plugins": [{ "name": "next" }]
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "next-env.d.ts", ".next/types/**/*.ts"],
   "exclude": ["node_modules", "dist", ".next", "out"]
 }

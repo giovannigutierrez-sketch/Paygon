@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cockpit base typography & color defaults. */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface-subtle text-ink antialiased dark:bg-surface-dark dark:text-ink-inverse;
+  font-feature-settings:
+    'cv02',
+    'cv03',
+    'cv04',
+    'cv11';
+}
+
+/* Tighter focus ring for the keyboard-first persona. */
+*:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-1 ring-offset-white dark:ring-offset-surface-dark;
+}
